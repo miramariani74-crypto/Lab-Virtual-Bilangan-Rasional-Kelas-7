@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Lab Matematika SMP - Bilangan Rasional & Literasi Finansial</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .tab-btn.active {
+            border-bottom: 3px solid #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+            background-color: #eff6ff;
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        .sim-running {
+            animation: pulse-subtle 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/20">
+                    <i class="fa-solid fa-calculator text-2xl text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Lab Virtual Matematika SMP</h1>
+                    <p class="text-xs text-blue-100 flex items-center gap-2">
+                        <span><i class="fa-solid fa-graduation-cap"></i> Kelas 7 - Kurikulum Merdeka</span>
+                        <span>•</span>
+                        <span><i class="fa-solid fa-coins"></i> Bilangan Rasional & Literasi Finansial</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 text-xs sm:text-sm bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+                <i class="fa-solid fa-clock text-yellow-300"></i>
+                <span>Status Lab: <strong id="statusBadge" class="text-green-300">Siap Digunakan</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+        <!-- Navigation Tabs -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
+            <div class="flex flex-wrap border-b border-slate-200 text-sm font-medium text-slate-600">
+                <button onclick="switchTab('tab-anggaran')" id="btn-tab-anggaran" class="tab-btn active px-5 py-3 flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-wallet text-blue-600"></i>
+                    <span>1. Simulasi Anggaran & Keuangan</span>
+                </button>
+                <button onclick="switchTab('tab-belanja')" id="btn-tab-belanja" class="tab-btn px-5 py-3 flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-cart-shopping text-emerald-600"></i>
+                    <span>2. Lab Belanja Cerdas (Harga Satuan)</span>
+                </button>
+                <button onclick="switchTab('tab-data')" id="btn-tab-data" class="tab-btn px-5 py-3 flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-chart-line text-purple-600"></i>
+                    <span>3. Tabel Pengamatan & Grafik</span>
+                </button>
+                <button onclick="switchTab('tab-analisis')" id="btn-tab-analisis" class="tab-btn px-5 py-3 flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-pen-to-square text-amber-600"></i>
+                    <span>4. Lembar Kerja & Analisis</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 1: SIMULASI ANGGARAN & KEUANGAN -->
+        <div id="tab-anggaran" class="tab-content grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Controls Sidebar (Left) -->
+            <div class="lg:col-span-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h2 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-600"></i> Kontrol Variabel
+                    </h2>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full font-semibold">Keuangan Bulanan</span>
+                </div>
+
+                <!-- Input Variables Form -->
+                <div class="space-y-4 text-sm">
+                    <!-- Pemasukan -->
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1 flex justify-between">
+                            <span>Pemasukan Bulanan (Rp)</span>
+                            <span id="val-pemasukan" class="text-blue-600 font-bold">Rp 3.000.000</span>
+                        </label>
+                        <input type="range" id="input-pemasukan" min="1000000" max="10000000" step="250000" value="3000000" 
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="updateBudgetSimulation()">
+                    </div>
+
+                    <!-- Fraksi Tabungan -->
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">
+                            Alokasi Tabungan (Bentuk Pecahan)
+                        </label>
+                        <select id="input-fraksi-tabungan" class="w-full border border-slate-300 rounded-lg p-2.5 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium" onchange="updateBudgetSimulation()">
+                            <option value="0.10">1/10 bagian (10% = 0,10)</option>
+                            <option value="0.20" selected>1/5 bagian (20% = 0,20)</option>
+                            <option value="0.25">1/4 bagian (25% = 0,25)</option>
+                            <option value="0.3333">1/3 bagian (33,3% ≈ 0,33)</option>
+                            <option value="0.50">1/2 bagian (50% = 0,50)</option>
+                        </select>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-circle-info text-blue-500"></i> Mengatur berapa bagian rasional dari gaji yang ditabung langsung.</p>
+                    </div>
+
+                    <!-- Kebutuhan Pokok -->
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1 flex justify-between">
+                            <span>Kebutuhan Pokok / Tetap (Rp)</span>
+                            <span id="val-kebutuhan" class="text-red-500 font-bold">Rp 1.800.000</span>
+                        </label>
+                        <input type="range" id="input-kebutuhan" min="500000" max="8000000" step="100000" value="1800000" 
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-500" oninput="updateBudgetSimulation()">
+                    </div>
+
+                    <!-- Pengeluaran Fleksibel / Diskon Belanja -->
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1 flex justify-between">
+                            <span>Diskon / Potongan Pengeluaran (%)</span>
+                            <span id="val-diskon" class="text-emerald-600 font-bold">10%</span>
+                        </label>
+                        <input type="range" id="input-diskon" min="0" max="50" step="5" value="10" 
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" oninput="updateBudgetSimulation()">
+                        <p class="text-xs text-slate-500 mt-1">Mengurangi biaya kebutuhan pokok dengan pemanfaatan diskon rasional.</p>
+                    </div>
+
+                    <!-- Durasi Simulasi (Bulan) -->
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1 flex justify-between">
+                            <span>Durasi Waktu Simulasi</span>
+                            <span id="val-durasi" class="text-purple-600 font-bold">6 Bulan</span>
+                        </label>
+                        <input type="range" id="input-durasi" min="1" max="12" step="1" value="6" 
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600" oninput="updateBudgetSimulation()">
+                    </div>
+                </div>
+
+                <!-- Simulation Control Action Buttons -->
+                <div class="border-t border-slate-100 pt-4 space-y-2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Tombol Eksekusi Lab</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btn-start" onclick="togglePlaySimulation()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-play" id="icon-play"></i> <span id="text-play">Mulai</span>
+                        </button>
+                        <button onclick="resetBudgetSimulation()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-rotate-left"></i> Reset
+                        </button>
+                    </div>
+                    <button onclick="catatHasilPengamatan()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-bookmark"></i> Catat Hasil ke Tabel Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualization Area (Right) -->
+            <div class="lg:col-span-8 space-y-6">
+                <!-- Status & Progress Timeline Bar -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-indigo-600"></i> Visualisasi Alokasi & Bilangan Rasional
+                        </h3>
+                        <span id="display-bulan" class="text-sm font-bold bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
+                            Bulan Berjalan: <span id="currentBulanText">1</span> / <span id="maxBulanText">6</span>
+                        </span>
+                    </div>
+
+                    <!-- Visual Progress Bar for Budget -->
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-blue-600"><i class="fa-solid fa-piggy-bank"></i> Tabungan (<span id="pct-tabungan-text">20%</span>)</span>
+                            <span class="text-red-600"><i class="fa-solid fa-receipt"></i> Kebutuhan Bersih (<span id="pct-kebutuhan-text">54%</span>)</span>
+                            <span class="text-emerald-600"><i class="fa-solid fa-coins"></i> Sisa Bersih/Surplus (<span id="pct-sisa-text">26%</span>)</span>
+                        </div>
+                        <div class="w-full h-5 bg-slate-100 rounded-full overflow-hidden flex shadow-inner border border-slate-200">
+                            <div id="bar-tabungan" class="bg-blue-500 h-full transition-all duration-300" style="width: 20%"></div>
+                            <div id="bar-kebutuhan" class="bg-red-500 h-full transition-all duration-300" style="width: 54%"></div>
+                            <div id="bar-sisa" class="bg-emerald-500 h-full transition-all duration-300" style="width: 26%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Mathematical Rational Number Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                            <span class="text-xs text-blue-700 font-medium">Nominal Ditabung / Bln</span>
+                            <p class="text-lg font-bold text-blue-900 mt-0.5" id="card-tabungan-nominal">Rp 600.000</p>
+                            <p class="text-xs text-blue-600 mt-1 font-mono" id="card-tabungan-rasional">Bentuk: 1/5 = 0,20</p>
+                        </div>
+                        <div class="p-3 bg-red-50 rounded-xl border border-red-100">
+                            <span class="text-xs text-red-700 font-medium">Pengeluaran Efektif</span>
+                            <p class="text-lg font-bold text-red-900 mt-0.5" id="card-kebutuhan-nominal">Rp 1.620.000</p>
+                            <p class="text-xs text-red-600 mt-1 font-mono" id="card-kebutuhan-rasional">Hemat: 10% = 0,10</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                            <span class="text-xs text-emerald-700 font-medium">Sisa Bebas (Surplus)</span>
+                            <p class="text-lg font-bold text-emerald-900 mt-0.5" id="card-sisa-nominal">Rp 780.000</p>
+                            <p class="text-xs text-emerald-600 mt-1 font-mono" id="card-sisa-rasional">Rasio: 26/100 = 0,26</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Cumulative Balance Chart -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-chart-area text-blue-600"></i> Proyeksi Pertumbuhan Tabungan & Akumulasi Sisa</span>
+                        <span class="text-xs font-normal text-slate-500">Persamaan Rasional: Total = Bulan × (Tabungan + Sisa)</span>
+                    </h4>
+                    <div class="h-64 relative w-full">
+                        <canvas id="budgetGrowthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: LAB BELANJA CERDAS (HARGA SATUAN / UNIT RATE) -->
+        <div id="tab-belanja" class="tab-content hidden space-y-6">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-6 rounded-2xl shadow-md">
+                <div class="max-w-3xl">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-store"></i> Lab Perbandingan Belanja Cerdas (Bilangan Rasional)
+                    </h2>
+                    <p class="text-sm text-emerald-100 mt-1">
+                        Seringkali kemasan lebih besar belum tentu lebih murah! Bandingkan dua pilihan kemasan barang dengan mengonversi berat/volume menjadi **Harga per Satuan (Unit Rate)** dalam bentuk bilangan rasional desimal.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Shopping Comparison Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- SHOP PRODUCT A -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-2 border-blue-200 space-y-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">PRODUK A (Toko Berkah)</span>
+                        <i class="fa-solid fa-box text-blue-500 text-xl"></i>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <label class="block font-medium text-slate-700">Kuantitas / Berat Barang</label>
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <input type="number" id="prodA-qty" value="500" min="10" step="10" class="border border-slate-300 rounded-lg p-2 font-medium" oninput="calculateShoppingComparison()">
+                                <select id="prodA-unit" class="border border-slate-300 rounded-lg p-2 bg-slate-50 font-medium" onchange="calculateShoppingComparison()">
+                                    <option value="gram">Gram (g)</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="ml">MiliLiter (ml)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-medium text-slate-700">Harga Label (Rp)</label>
+                            <input type="number" id="prodA-price" value="25000" step="500" class="w-full border border-slate-300 rounded-lg p-2 font-medium mt-1" oninput="calculateShoppingComparison()">
+                        </div>
+
+                        <div>
+                            <label class="block font-medium text-slate-700">Diskon Toko A (%)</label>
+                            <input type="number" id="prodA-discount" value="10" min="0" max="90" class="w-full border border-slate-300 rounded-lg p-2 font-medium mt-1" oninput="calculateShoppingComparison()">
+                        </div>
+                    </div>
+
+                    <!-- Result Box Product A -->
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Harga Akhir Potongan:</span>
+                            <span id="prodA-final-price" class="font-bold text-blue-900">Rp 22.500</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Kuantitas Standar (Kg/Liter):</span>
+                            <span id="prodA-standard-qty" class="font-mono font-bold text-blue-800">0,5 kg (1/2 kg)</span>
+                        </div>
+                        <div class="flex justify-between pt-2 border-t border-blue-200 text-sm">
+                            <span class="font-bold text-slate-700">Harga Satuan (Per Kg/L):</span>
+                            <span id="prodA-unit-rate" class="font-bold text-blue-700">Rp 45.000 / kg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHOP PRODUCT B -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-2 border-emerald-200 space-y-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">PRODUK B (Toko Jaya)</span>
+                        <i class="fa-solid fa-boxes-stacked text-emerald-500 text-xl"></i>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <label class="block font-medium text-slate-700">Kuantitas / Berat Barang</label>
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <input type="number" id="prodB-qty" value="750" min="10" step="10" class="border border-slate-300 rounded-lg p-2 font-medium" oninput="calculateShoppingComparison()">
+                                <select id="prodB-unit" class="border border-slate-300 rounded-lg p-2 bg-slate-50 font-medium" onchange="calculateShoppingComparison()">
+                                    <option value="gram">Gram (g)</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="ml">MiliLiter (ml)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-medium text-slate-700">Harga Label (Rp)</label>
+                            <input type="number" id="prodB-price" value="36000" step="500" class="w-full border border-slate-300 rounded-lg p-2 font-medium mt-1" oninput="calculateShoppingComparison()">
+                        </div>
+
+                        <div>
+                            <label class="block font-medium text-slate-700">Diskon Toko B (%)</label>
+                            <input type="number" id="prodB-discount" value="15" min="0" max="90" class="w-full border border-slate-300 rounded-lg p-2 font-medium mt-1" oninput="calculateShoppingComparison()">
+                        </div>
+                    </div>
+
+                    <!-- Result Box Product B -->
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Harga Akhir Potongan:</span>
+                            <span id="prodB-final-price" class="font-bold text-emerald-900">Rp 30.600</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Kuantitas Standar (Kg/Liter):</span>
+                            <span id="prodB-standard-qty" class="font-mono font-bold text-emerald-800">0,75 kg (3/4 kg)</span>
+                        </div>
+                        <div class="flex justify-between pt-2 border-t border-emerald-200 text-sm">
+                            <span class="font-bold text-slate-700">Harga Satuan (Per Kg/L):</span>
+                            <span id="prodB-unit-rate" class="font-bold text-emerald-700">Rp 40.800 / kg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Recommendation Card -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-4 bg-amber-100 text-amber-700 rounded-2xl text-2xl">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Rekomendasi Keputusan Finansial Rasional:</h4>
+                        <p id="shopping-recommendation" class="text-sm text-slate-600 mt-0.5">
+                            Menghitung...
+                        </p>
+                    </div>
+                </div>
+                <button onclick="catatHasilBelanja()" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition-all whitespace-nowrap text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Catat Hasil Belanja ke Tabel
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 3: TABEL PENGAMATAN & GRAFIK -->
+        <div id="tab-data" class="tab-content hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-table text-purple-600"></i> Tabel Hasil Pengamatan Praktikum
+                        </h3>
+                        <p class="text-xs text-slate-500">Data hasil pengujian simulasi anggaran dan perbandingan belanja rasional.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="clearObservationTable()" class="bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-3 py-2 rounded-lg text-xs transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Observation Table -->
+                <div class="overflow-x-auto custom-scrollbar mt-4">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 uppercase font-semibold text-xs border-b border-slate-200">
+                                <th class="p-3">#</th>
+                                <th class="p-3">Jenis Percobaan</th>
+                                <th class="p-3">Input Pemasukan / Harga Awal</th>
+                                <th class="p-3">Fraksi / Potongan (%)</th>
+                                <th class="p-3">Bentuk Rasional (Desimal/Pecahan)</th>
+                                <th class="p-3">Hasil Akhir (Penghematan/Surplus)</th>
+                                <th class="p-3">Kesimpulan Ringkas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="observation-tbody" class="divide-y divide-slate-100 text-slate-600">
+                            <!-- Rows dynamically populated -->
+                            <tr id="empty-table-row">
+                                <td colspan="7" class="text-center py-8 text-slate-400 italic">
+                                    Belum ada data pengamatan tercatat. Lakukan percobaan di Tab 1 atau Tab 2 lalu klik "Catat Hasil".
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: LEMBAR KERJA & PERTANYAAN ANALISIS -->
+        <div id="tab-analisis" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="border-b border-slate-100 pb-4 mb-5">
+                    <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-pen-ruler text-amber-600"></i> Pertanyaan Analisis & Refleksi Siswa
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Jawab pertanyaan analisis berikut berdasarkan hasil simulasi yang telah kamu lakukan di laboratorium virtual ini!
+                    </p>
+                </div>
+
+                <!-- Analysis Form Questions -->
+                <div class="space-y-6">
+                    <!-- Soal 1 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        <label class="block font-semibold text-slate-800 text-sm">
+                            1. Konversi Bilangan Rasional Tabungan:
+                        </label>
+                        <p class="text-xs text-slate-600">
+                            Jika sebuah keluarga mengalokasikan $\frac{1}{4}$ bagian dari total gaji sebesar Rp 4.000.000,00 untuk ditabung:
+                            <br>a) Berapakah bentuk desimal dan persentase dari $\frac{1}{4}$?
+                            <br>b) Berapakah nominal rupiah yang berhasil ditabung?
+                        </p>
+                        <textarea id="q1-answer" rows="2" class="w-full p-2.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="Tuliskan langkah penyelesaian dan jawabanmu di sini..."></textarea>
+                        <button onclick="checkAnswer(1)" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all">
+                            Cek Penjelasan Kunci
+                        </button>
+                        <div id="q1-feedback" class="hidden text-xs p-3 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 mt-2"></div>
+                    </div>
+
+                    <!-- Soal 2 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        <label class="block font-semibold text-slate-800 text-sm">
+                            2. Analisis Belanja Cerdas (Harga Satuan / Unit Rate):
+                        </label>
+                        <p class="text-xs text-slate-600">
+                            Toko A menjual Deterjen $500\text{ gram}$ seharga Rp 15.000,00. Toko B menjual Deterjen $1,2\text{ kg}$ seharga Rp 30.000,00. 
+                            Manakah produk dengan harga satuan per kilogram yang lebih murah? Tunjukkan perhitungan bilangan rasionalmu!
+                        </p>
+                        <textarea id="q2-answer" rows="2" class="w-full p-2.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="Tuliskan analisis perbandingan harga per kg di sini..."></textarea>
+                        <button onclick="checkAnswer(2)" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all">
+                            Cek Penjelasan Kunci
+                        </button>
+                        <div id="q2-feedback" class="hidden text-xs p-3 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 mt-2"></div>
+                    </div>
+
+                    <!-- Soal 3 -->
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        <label class="block font-semibold text-slate-800 text-sm">
+                            3. Konsep Bilangan Rasional Negatif (Defisit Finansial):
+                        </label>
+                        <p class="text-xs text-slate-600">
+                            Dalam konteks keuangan, apa artinya jika pengeluaran seseorang lebih besar daripada pemasukan sehingga sisa uang bernilai negatif (misal $- \text{Rp } 250.000,00$)? Mengapa penting menjaga sisa uang bernilai positif ($\ge 0$)?
+                        </p>
+                        <textarea id="q3-answer" rows="2" class="w-full p-2.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none" placeholder="Jelaskan pemahamanmu mengenai bilangan rasional negatif pada keuangan..."></textarea>
+                        <button onclick="checkAnswer(3)" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all">
+                            Cek Penjelasan Kunci
+                        </button>
+                        <div id="q3-feedback" class="hidden text-xs p-3 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 transition-opacity opacity-0 pointer-events-none z-50 text-sm">
+        <i class="fa-solid fa-circle-check text-green-400" id="toast-icon"></i>
+        <span id="toast-msg">Pesan notifikasi</span>
+    </div>
+
+    <script>
+        // Global Simulation State
+        let isSimulating = false;
+        let simInterval = null;
+        let currentMonth = 1;
+        let observationLog = [];
+        let budgetChart = null;
+
+        // Formatting currency helper
+        function formatIDR(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
+        }
+
+        // Custom Toast Notification (No alert allowed)
+        function showNotification(message, iconClass = "fa-circle-check text-green-400") {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            toastIcon.className = `fa-solid ${iconClass}`;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Remove active class from buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+
+            // Trigger chart resize if navigating to data tab
+            if (tabId === 'tab-anggaran' && budgetChart) {
+                setTimeout(() => budgetChart.resize(), 100);
+            }
+        }
+
+        function updateBudgetSimulation() {
+            const income = parseFloat(document.getElementById('input-pemasukan').value);
+            const savingsFraction = parseFloat(document.getElementById('input-fraksi-tabungan').value);
+            const baseExpenses = parseFloat(document.getElementById('input-kebutuhan').value);
+            const discountPct = parseFloat(document.getElementById('input-diskon').value) / 100;
+            const maxDuration = parseInt(document.getElementById('input-durasi').value);
+
+            // Update UI slider labels
+            document.getElementById('val-pemasukan').innerText = formatIDR(income);
+            document.getElementById('val-kebutuhan').innerText = formatIDR(baseExpenses);
+            document.getElementById('val-diskon').innerText = `${Math.round(discountPct * 100)}%`;
+            document.getElementById('val-durasi').innerText = `${maxDuration} Bulan`;
+            document.getElementById('maxBulanText').innerText = maxDuration;
+
+            // Math calculations with rational numbers
+            const savingsAmount = income * savingsFraction;
+            const discountedExpenses = baseExpenses * (1 - discountPct);
+            const surplusAmount = income - (savingsAmount + discountedExpenses);
+
+            // Calculate percentage shares
+            const pctSavings = Math.round((savingsAmount / income) * 100);
+            const pctExpenses = Math.round((discountedExpenses / income) * 100);
+            const pctSurplus = 100 - pctSavings - pctExpenses;
+
+            // Update Visual Bars
+            document.getElementById('bar-tabungan').style.width = `${Math.max(0, pctSavings)}%`;
+            document.getElementById('bar-kebutuhan').style.width = `${Math.max(0, pctExpenses)}%`;
+            document.getElementById('bar-sisa').style.width = `${Math.max(0, pctSurplus)}%`;
+
+            document.getElementById('pct-tabungan-text').innerText = `${pctSavings}%`;
+            document.getElementById('pct-kebutuhan-text').innerText = `${pctExpenses}%`;
+            document.getElementById('pct-sisa-text').innerText = `${pctSurplus}%`;
+
+            // Update Cards
+            document.getElementById('card-tabungan-nominal').innerText = formatIDR(savingsAmount);
+            document.getElementById('card-kebutuhan-nominal').innerText = formatIDR(discountedExpenses);
+            document.getElementById('card-sisa-nominal').innerText = formatIDR(surplusAmount);
+
+            // Rational expressions display
+            const savingsFractionText = document.getElementById('input-fraksi-tabungan').options[document.getElementById('input-fraksi-tabungan').selectedIndex].text.split(' ')[0];
+            document.getElementById('card-tabungan-rasional').innerText = `Pecahan: ${savingsFractionText} = ${savingsFraction.toFixed(2)}`;
+            document.getElementById('card-kebutuhan-rasional').innerText = `Penghematan: ${(1 - discountPct).toFixed(2)} × Biaya`;
+            document.getElementById('card-sisa-rasional').innerText = `Rasio Sisa: ${(surplusAmount / income).toFixed(2)}`;
+
+            // Update Chart
+            updateChartData(maxDuration, savingsAmount, surplusAmount);
+        }
+
+        function initBudgetChart() {
+            const ctx = document.getElementById('budgetGrowthChart').getContext('2d');
+            budgetChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Akumulasi Tabungan (Rp)',
+                            data: [],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Total Sisa Bersih / Surplus (Rp)',
+                            data: [],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + (value / 1000000).toFixed(1) + ' Jt';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChartData(months, monthlySavings, monthlySurplus) {
+            if (!budgetChart) return;
+
+            const labels = [];
+            const savingsData = [];
+            const surplusData = [];
+
+            for (let i = 1; i <= months; i++) {
+                labels.push(`Bulan ${i}`);
+                savingsData.push(monthlySavings * i);
+                surplusData.push(monthlySurplus * i);
+            }
+
+            budgetChart.data.labels = labels;
+            budgetChart.data.datasets[0].data = savingsData;
+            budgetChart.data.datasets[1].data = surplusData;
+            budgetChart.update();
+        }
+
+        function togglePlaySimulation() {
+            const btnPlay = document.getElementById('btn-start');
+            const textPlay = document.getElementById('text-play');
+            const iconPlay = document.getElementById('icon-play');
+            const maxMonths = parseInt(document.getElementById('input-durasi').value);
+
+            if (!isSimulating) {
+                // Start
+                isSimulating = true;
+                textPlay.innerText = "Pause";
+                iconPlay.className = "fa-solid fa-pause";
+                document.getElementById('statusBadge').innerText = "Simulasi Berjalan...";
+                document.getElementById('statusBadge').className = "text-yellow-300 sim-running";
+
+                simInterval = setInterval(() => {
+                    if (currentMonth < maxMonths) {
+                        currentMonth++;
+                        document.getElementById('currentBulanText').innerText = currentMonth;
+                    } else {
+                        // Max reached
+                        togglePlaySimulation();
+                        showNotification(`Simulasi ${maxMonths} Bulan Selesai!`, "fa-flag-checkered text-blue-400");
+                    }
+                }, 800);
+            } else {
+                // Pause
+                isSimulating = false;
+                clearInterval(simInterval);
+                textPlay.innerText = "Lanjut";
+                iconPlay.className = "fa-solid fa-play";
+                document.getElementById('statusBadge').innerText = "Dihentikan Sementara";
+                document.getElementById('statusBadge').className = "text-amber-300";
+            }
+        }
+
+        function resetBudgetSimulation() {
+            if (isSimulating) togglePlaySimulation();
+            currentMonth = 1;
+            document.getElementById('currentBulanText').innerText = 1;
+            document.getElementById('statusBadge').innerText = "Siap Digunakan";
+            document.getElementById('statusBadge').className = "text-green-300";
+            updateBudgetSimulation();
+            showNotification("Simulasi telah di-reset ke kondisi awal.", "fa-arrow-rotate-left text-slate-300");
+        }
+
+        function calculateShoppingComparison() {
+            // Product A Inputs
+            const qtyA = parseFloat(document.getElementById('prodA-qty').value) || 0;
+            const unitA = document.getElementById('prodA-unit').value;
+            const priceA = parseFloat(document.getElementById('prodA-price').value) || 0;
+            const discA = parseFloat(document.getElementById('prodA-discount').value) || 0;
+
+            // Product B Inputs
+            const qtyB = parseFloat(document.getElementById('prodB-qty').value) || 0;
+            const unitB = document.getElementById('prodB-unit').value;
+            const priceB = parseFloat(document.getElementById('prodB-price').value) || 0;
+            const discB = parseFloat(document.getElementById('prodB-discount').value) || 0;
+
+            // Convert to base standard units (Kg or Liter)
+            const stdQtyA = unitA === 'gram' || unitA === 'ml' ? qtyA / 1000 : qtyA;
+            const stdQtyB = unitB === 'gram' || unitB === 'ml' ? qtyB / 1000 : qtyB;
+
+            // Final price after discount
+            const finalPriceA = priceA * (1 - discA / 100);
+            const finalPriceB = priceB * (1 - discB / 100);
+
+            // Unit rate (Harga per Kg/Liter)
+            const unitRateA = stdQtyA > 0 ? finalPriceA / stdQtyA : 0;
+            const unitRateB = stdQtyB > 0 ? finalPriceB / stdQtyB : 0;
+
+            // Display Product A Results
+            document.getElementById('prodA-final-price').innerText = formatIDR(finalPriceA);
+            document.getElementById('prodA-standard-qty').innerText = `${stdQtyA} ${unitA === 'ml' ? 'Liter' : 'kg'}`;
+            document.getElementById('prodA-unit-rate').innerText = `${formatIDR(unitRateA)} / ${unitA === 'ml' ? 'L' : 'kg'}`;
+
+            // Display Product B Results
+            document.getElementById('prodB-final-price').innerText = formatIDR(finalPriceB);
+            document.getElementById('prodB-standard-qty').innerText = `${stdQtyB} ${unitB === 'ml' ? 'Liter' : 'kg'}`;
+            document.getElementById('prodB-unit-rate').innerText = `${formatIDR(unitRateB)} / ${unitB === 'ml' ? 'L' : 'kg'}`;
+
+            // Compare and display recommendation
+            const recEl = document.getElementById('shopping-recommendation');
+            if (unitRateA < unitRateB) {
+                const selisih = unitRateB - unitRateA;
+                recEl.innerHTML = `<strong class="text-blue-700">Pilihlah Produk A!</strong> Lebih hemat <strong>${formatIDR(selisih)}</strong> per standar unit (${unitA === 'ml' ? 'Liter' : 'kg'}) dibandingkan Produk B.`;
+            } else if (unitRateB < unitRateA) {
+                const selisih = unitRateA - unitRateB;
+                recEl.innerHTML = `<strong class="text-emerald-700">Pilihlah Produk B!</strong> Lebih hemat <strong>${formatIDR(selisih)}</strong> per standar unit (${unitB === 'ml' ? 'Liter' : 'kg'}) dibandingkan Produk A.`;
+            } else {
+                recEl.innerHTML = `<strong class="text-slate-700">Kedua produk memiliki harga satuan yang SAMA.</strong> Nilai ekonomis keduanya setara.`;
+            }
+        }
+
+        function catatHasilPengamatan() {
+            const income = parseFloat(document.getElementById('input-pemasukan').value);
+            const savingsFraction = parseFloat(document.getElementById('input-fraksi-tabungan').value);
+            const savingsText = document.getElementById('input-fraksi-tabungan').options[document.getElementById('input-fraksi-tabungan').selectedIndex].text.split(' ')[0];
+            const discountPct = document.getElementById('input-diskon').value;
+            
+            const savingsAmount = income * savingsFraction;
+            const baseExpenses = parseFloat(document.getElementById('input-kebutuhan').value);
+            const discountedExpenses = baseExpenses * (1 - discountPct / 100);
+            const surplusAmount = income - (savingsAmount + discountedExpenses);
+
+            const rowData = {
+                type: "Anggaran Keuangan",
+                input: `Pemasukan: ${formatIDR(income)}`,
+                fraction: `Tabungan: ${savingsText} | Diskon: ${discountPct}%`,
+                rationalForm: `Desimal: ${savingsFraction.toFixed(2)} | Diskon: ${(discountPct/100).toFixed(2)}`,
+                result: `Surplus: ${formatIDR(surplusAmount)} / Bln`,
+                conclusion: surplusAmount >= 0 ? "Keuangan Sehat (Surplus)" : "Keuangan Defisit (Rasional Negatif)"
+            };
+
+            addTableRow(rowData);
+            showNotification("Data simulasi anggaran berhasil dicatat ke Tabel Pengamatan!", "fa-table text-purple-400");
+        }
+
+        function catatHasilBelanja() {
+            const qtyA = document.getElementById('prodA-qty').value;
+            const unitA = document.getElementById('prodA-unit').value;
+            const rateA = document.getElementById('prodA-unit-rate').innerText;
+            const rateB = document.getElementById('prodB-unit-rate').innerText;
+            const recText = document.getElementById('shopping-recommendation').innerText;
+
+            const rowData = {
+                type: "Belanja Cerdas (Unit Rate)",
+                input: `Prod A: ${qtyA}${unitA} vs Prod B`,
+                fraction: `Banding Harga Satuan`,
+                rationalForm: `Satuan A: ${rateA} | B: ${rateB}`,
+                result: `Perbedaan Nilai Rasional`,
+                conclusion: recText.split('!')[0]
+            };
+
+            addTableRow(rowData);
+            showNotification("Data perbandingan belanja berhasil dicatat!", "fa-cart-shopping text-emerald-400");
+        }
+
+        function addTableRow(data) {
+            observationLog.push(data);
+            const tbody = document.getElementById('observation-tbody');
+            
+            // Remove empty row text if first entry
+            const emptyRow = document.getElementById('empty-table-row');
+            if (emptyRow) emptyRow.remove();
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+            tr.innerHTML = `
+                <td class="p-3 font-bold text-slate-700">${observationLog.length}</td>
+                <td class="p-3 font-semibold text-blue-600">${data.type}</td>
+                <td class="p-3">${data.input}</td>
+                <td class="p-3"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-mono text-xs">${data.fraction}</span></td>
+                <td class="p-3 font-mono text-xs text-purple-700">${data.rationalForm}</td>
+                <td class="p-3 font-bold ${data.result.includes('Defisit') ? 'text-red-600' : 'text-emerald-600'}">${data.result}</td>
+                <td class="p-3">${data.conclusion}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function clearObservationTable() {
+            observationLog = [];
+            const tbody = document.getElementById('observation-tbody');
+            tbody.innerHTML = `
+                <tr id="empty-table-row">
+                    <td colspan="7" class="text-center py-8 text-slate-400 italic">
+                        Belum ada data pengamatan tercatat. Lakukan percobaan di Tab 1 atau Tab 2 lalu klik "Catat Hasil".
+                    </td>
+                </tr>
+            `;
+            showNotification("Tabel data pengamatan dibersihkan.", "fa-trash text-red-400");
+        }
+
+        function checkAnswer(qNum) {
+            const feedbackEl = document.getElementById(`q${qNum}-feedback`);
+            feedbackEl.classList.remove('hidden');
+
+            if (qNum === 1) {
+                feedbackEl.innerHTML = `
+                    <strong><i class="fa-solid fa-lightbulb"></i> Kunci Jawaban & Penjelasan:</strong><br>
+                    a) Bentuk Desimal dari <sup>1</sup>/<sub>4</sub> = <strong>0,25</strong> dan Bentuk Persentase = <strong>25%</strong>.<br>
+                    b) Nominal Tabungan = <sup>1</sup>/<sub>4</sub> × Rp 4.000.000,00 = <strong>Rp 1.000.000,00</strong>.
+                `;
+            } else if (qNum === 2) {
+                feedbackEl.innerHTML = `
+                    <strong><i class="fa-solid fa-lightbulb"></i> Kunci Jawaban & Penjelasan:</strong><br>
+                    - Toko A: 500 gram = 0,5 kg. Harga per kg = Rp 15.000 / 0,5 = <strong>Rp 30.000,00 / kg</strong>.<br>
+                    - Toko B: 1,2 kg seharga Rp 30.000,00. Harga per kg = Rp 30.000 / 1,2 = <strong>Rp 25.000,00 / kg</strong>.<br>
+                    <strong>Kesimpulan:</strong> Toko B lebih murah karena harga satuannya Rp 25.000/kg dibanding Toko A Rp 30.000/kg.
+                `;
+            } else if (qNum === 3) {
+                feedbackEl.innerHTML = `
+                    <strong><i class="fa-solid fa-lightbulb"></i> Kunci Jawaban & Penjelasan:</strong><br>
+                    Bilangan rasional negatif (seperti -Rp 250.000) menunjukkan keadaan <strong>Defisit / Utang</strong>. Artinya pengeluaran melebihi uang yang dimiliki. Mempertahankan nilai positif (Surplus) penting agar kebutuhan masa depan terpenuhi dan memiliki cadangan tabungan.
+                `;
+            }
+        }
+
+        window.onload = function () {
+            initBudgetChart();
+            updateBudgetSimulation();
+            calculateShoppingComparison();
+        };
+    </script>
+</body>
+</html>
